@@ -2,13 +2,13 @@ package main
 
 import (
 	"embed"
+	"errors"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
-
-	"github.com/hotjuicew/hugoArticleEncryptor/data"
 )
 
 //go:embed AESDecrypt.js
@@ -17,41 +17,90 @@ var aesDecryptScript embed.FS
 //go:embed secret.html
 var secretHtml embed.FS
 
-func main() {
+func printUsage() {
+	fmt.Println("Usage: ./hugocrypter [command]")
+	fmt.Println("Available commands:")
+	fmt.Println("  pre    - Execute pre-processing tasks")
+	fmt.Println("  post   - Execute post-processing tasks")
+	fmt.Println("--help   - Show this help message")
+	fmt.Println(" -f   	  - Force overwrite in pre-build process step")
+	fmt.Println("If no command specified, full process will be executed: pre-process -> hugo (build) -> post-process")
+}
 
-	dir1 := "static/js"
-	err := os.MkdirAll(dir1, os.ModePerm)
-	if err != nil {
-		log.Println(" ", err)
-		return
-	}
-	dir2 := "layouts/shortcodes"
-	err = os.MkdirAll(dir2, os.ModePerm)
-	if err != nil {
-		log.Println(" \"layouts/shortcodes\" create fail:", err)
-		return
-	}
-	err = data.CopyFile("AESDecrypt.js", filepath.Join("static/js/AESDecrypt.js"), aesDecryptScript)
-	if err != nil {
-		log.Fatalf("data.CopyFile: AESDecrypt.js gets error %v", err)
-	}
-	err = data.CopyFile("secret.html", filepath.Join("layouts/shortcodes/secret.html"), secretHtml)
-	if err != nil {
-		log.Fatal("data.CopyFile: secret.html gets error", err)
+func prebuild_process(force bool) {
+	log.Println("pre-build processing....")
+	aerDecryptJsFilePath := "static/js/AESDecrypt.js"
+	if _, err := os.Stat(aerDecryptJsFilePath); force || errors.Is(err, os.ErrNotExist) {
+		err := os.MkdirAll(path.Dir(aerDecryptJsFilePath), os.ModePerm)
+		if err != nil {
+			log.Println(" ", err)
+			return
+		}
+		err = CopyFile(filepath.Base(aerDecryptJsFilePath), aerDecryptJsFilePath, aesDecryptScript)
+		if err != nil {
+			log.Fatalf("data.CopyFile: AESDecrypt.js gets error %v", err)
+		}
+		log.Printf("Successfully created %s \n", aerDecryptJsFilePath)
 	}
 
+	secretShortcodeFilePath := "layouts/shortcodes/secret.html"
+	if _, err := os.Stat(secretShortcodeFilePath); force || errors.Is(err, os.ErrNotExist) {
+		err = os.MkdirAll(path.Dir(secretShortcodeFilePath), os.ModePerm)
+		if err != nil {
+			log.Println("layouts/shortcodes create fail:", err)
+			return
+		}
+		err = CopyFile(filepath.Base(secretShortcodeFilePath), secretShortcodeFilePath, secretHtml)
+		if err != nil {
+			log.Fatal("data.CopyFile: secret.html gets error", err)
+		}
+		log.Printf("Successfully created %s \n", secretShortcodeFilePath)
+	}
+}
+
+func postbuild_process() {
+	log.Println("post-build processing....")
+	// solve html files in public folder
+	err := WalkHTMLFiles()
+	if err != nil {
+		log.Fatal("Error:", err)
+	}
+}
+
+func full_process(force bool) {
+	prebuild_process(force)
 	output, err := exec.Command("hugo").Output()
+	fmt.Println(string(output))
 	if err != nil {
 		log.Fatalln("cmd.Output() gets error", err)
 	}
 
-	// Output command execution results
-	fmt.Println(string(output))
+	postbuild_process()
+}
 
-	// solve html files in public folder
-	err = data.WalkHTMLFiles()
-	if err != nil {
-		log.Fatal("Error:", err)
+func main() {
+	force := false
+	for _, arg := range os.Args {
+		if arg == "-f" {
+			force = true
+		}
+	}
+	if force || len(os.Args) < 2 {
+		full_process(force)
+		return
 	}
 
+	command := os.Args[1]
+	switch command {
+	case "pre":
+		prebuild_process(force)
+	case "post":
+		postbuild_process()
+	case "--help":
+		printUsage()
+	default:
+		fmt.Printf("Error: Unknown command '%s'\n", command)
+		printUsage()
+		os.Exit(1)
+	}
 }

@@ -4,15 +4,11 @@ async function AESDecrypt(cipher, password) {
     let ciphertext = parts[1];
     let nonce = parts[0];
     const ciphertextBuffer = hexToBytes(ciphertext)
-    // 计算密码的 SHA-256作为密钥
-    // 将密码转换为 Uint8Array
     let encoder = new TextEncoder();
     let data = encoder.encode(password);
 
-    // 计算 SHA-256 哈希
     let hashBuffer = await crypto.subtle.digest('SHA-256', data);
 
-    // 将哈希结果转换为 Uint8Array
     let hash = Array.from(new Uint8Array(hashBuffer));
 
     const hashKey = new Uint8Array(hash);
@@ -36,12 +32,10 @@ async function AESDecrypt(cipher, password) {
     return new TextDecoder('utf-8').decode(new Uint8Array(decrypted))
 }
 function hexToBytes(hexString) {
-    // 去除可能存在的前缀 "0x" 或 "0X"
     if (hexString.startsWith("0x") || hexString.startsWith("0X")) {
         hexString = hexString.slice(2);
     }
 
-    // 将十六进制字符串转换为 Uint8Array
     const bytes = new Uint8Array(hexString.length / 2);
     for (let i = 0; i < hexString.length; i += 2) {
         bytes[i / 2] = parseInt(hexString.substr(i, 2), 16);
@@ -75,7 +69,12 @@ function decryption(password) {
         verificationElement.insertAdjacentHTML('afterend', htmlText);
         if (localStorage.getItem(title) !==password)localStorage.setItem(title, password);
     }).catch(error => {
-        alert("Incorrect password. Please try again.");
+        let repOnFail = "Incorrect password!!"
+        let repOnFailElement = document.getElementById('repOnFail');
+        if (repOnFailElement != null && repOnFailElement.hasAttribute("text")) {
+            repOnFail = repOnFailElement.getAttribute("text")
+        }
+        alert(repOnFail);
         console.error("Failed to decrypt",error);
     });
 }

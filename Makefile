@@ -1,5 +1,5 @@
-BINARY := hugoArticleEncryptor
-MODULE := github.com/hotjuicew/hugoArticleEncryptor
+BINARY := hugocrypter
+MODULE := github.com/nhuongmh/hugocrypter
 
 BUILD_DIR     := build
 BUILD_FLAGS   := -v

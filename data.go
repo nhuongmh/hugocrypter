@@ -1,8 +1,7 @@
-package data
+package main
 
 import (
 	"embed"
-	"github.com/hotjuicew/hugoArticleEncryptor/crypto"
 	"io"
 	"log"
 	"os"
@@ -12,7 +11,6 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-// CopyFile 将嵌入文件复制到目标路径
 func CopyFile(sourcePath, destinationPath string, content embed.FS) error {
 	// Read content from embedded files
 	file, err := content.Open(sourcePath)
@@ -35,22 +33,18 @@ func CopyFile(sourcePath, destinationPath string, content embed.FS) error {
 	return nil
 }
 
-// WalkHTMLFiles 遍历一遍public/posts(或post)下面的文件夹里面的html文件
 func WalkHTMLFiles() error {
 	err := filepath.WalkDir("public", func(path string, info os.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
 
-		// 如果当前路径是文件夹，则继续遍历子文件夹
 		if info.IsDir() {
 			return nil
 		}
 
-		// 检查文件扩展名是否为.html
 		ext := strings.ToLower(filepath.Ext(path))
 		if ext == ".html" {
-			// 处理HTML文件的逻辑
 			getData(path)
 		}
 
@@ -60,9 +54,7 @@ func WalkHTMLFiles() error {
 	return err
 }
 
-// getData 获取HTML文件中的密码和内容，修改HTML文件并写入
 func getData(path string) {
-	// 从嵌入文件中读取HTML内容
 	file, err := os.ReadFile(path)
 	if err != nil {
 		log.Println("Error reading file:", path)
@@ -82,18 +74,18 @@ func getData(path string) {
 	if secretElements.Length() == 0 {
 		return
 	}
+	log.Printf("Processing: %v \n", path)
 	passwordAttr, _ := secretElements.Attr("password")
 	innerText := secretElements.Text()
 
-	//在html变量中删除password属性，并且删除innerText
 	secretElements.RemoveAttr("password")
-	encryptedPassword := crypto.GetEncryptedPassword(passwordAttr)
-	encryptedContent, err := crypto.AESEncrypt(innerText, encryptedPassword)
+	encryptedPassword := GetEncryptedPassword(passwordAttr)
+	log.Printf("  Encrypted password: %v \n", encryptedPassword)
+	encryptedContent, err := AESEncrypt(innerText, encryptedPassword)
 	if err != nil {
 		log.Fatal("crypto.AESEncrypt(innerText, encryptedPassword) gets err", err)
 	}
 	secretElements.SetText(encryptedContent)
-	//把修改后的HTML内容写入源文件
 	newHtml, err := doc.Html()
 	if err != nil {
 		log.Fatal("doc.Html() gets err: ", err)
