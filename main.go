@@ -36,7 +36,7 @@ func prebuild_process(force bool) {
 			log.Println(" ", err)
 			return
 		}
-		err = CopyFile(filepath.Base(aerDecryptJsFilePath), aerDecryptJsFilePath, aesDecryptScript)
+		err = copyFile(filepath.Base(aerDecryptJsFilePath), aerDecryptJsFilePath, aesDecryptScript)
 		if err != nil {
 			log.Fatalf("data.CopyFile: AESDecrypt.js gets error %v", err)
 		}
@@ -50,7 +50,7 @@ func prebuild_process(force bool) {
 			log.Println("layouts/shortcodes create fail:", err)
 			return
 		}
-		err = CopyFile(filepath.Base(secretShortcodeFilePath), secretShortcodeFilePath, secretHtml)
+		err = copyFile(filepath.Base(secretShortcodeFilePath), secretShortcodeFilePath, secretHtml)
 		if err != nil {
 			log.Fatal("data.CopyFile: secret.html gets error", err)
 		}
@@ -61,7 +61,7 @@ func prebuild_process(force bool) {
 func postbuild_process() {
 	log.Println("post-build processing....")
 	// solve html files in public folder
-	err := WalkHTMLFiles()
+	err := walkHTMLFiles()
 	if err != nil {
 		log.Fatal("Error:", err)
 	}

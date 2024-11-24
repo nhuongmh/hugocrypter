@@ -20,13 +20,17 @@ Then you’re able to access the command via
 ```bash
 $HOME/go/bin/hugocrypter
 ```
+
 ## Note
+
  - ⚠️ Important Security Note ⚠️Because input password is display as plain text, I highly recommend you to keep your blog repository in **private**.
  - hugocrypter only works on the "posts" folder (or "post" folder) under your "content" directory.
 
 
 ## Usage
+
 ### Help:
+
 ```bash
 [root@localhost]$ ./hugocrypter --help
 Usage: ./hugocrypter [command]
@@ -39,6 +43,7 @@ If no command specified, full process will be executed: pre-process -> hugo (bui
 ```
 
 ### Mark which content to encrypt
+
 Before building, you can mark which session of your posts need encryption by using shortcodes
 ```markdown
 {{< secret pass="kqueekquee" title="What is the fox say?" repFail="Uh oh! not like that" >}}
@@ -60,6 +65,7 @@ params:
 If none of above provided, hugocrypter will use default password, which is `hugocrypter`
 
 ### Build site
+
 You can ask hugocrypter to copy `secret` shortcode and necessary Javascript files into project by using command at root of hugo project:
 ```bash
 hugocrypter pre
@@ -82,6 +88,7 @@ hugocrypter pre && hugo && hugocrypter post
 ```
 
 ### Test 
+
 As hugocrypter only works with built site content, `hugo serve` will not work and you have to use external http server:
 Example using python:
 ```bash
@@ -94,6 +101,7 @@ http-server -p 1313 public
 ```
 
 ### Configuration on Platforms like Netlify
+
 You can specify build command as follow
 ```bash
 hugo mod get -u; go install github.com/nhuongmh/hugocrypter@latest; $(go env GOPATH)/bin/hugocrypter

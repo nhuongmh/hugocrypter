@@ -11,7 +11,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-func CopyFile(sourcePath, destinationPath string, content embed.FS) error {
+func copyFile(sourcePath, destinationPath string, content embed.FS) error {
 	// Read content from embedded files
 	file, err := content.Open(sourcePath)
 	if err != nil {
@@ -33,7 +33,7 @@ func CopyFile(sourcePath, destinationPath string, content embed.FS) error {
 	return nil
 }
 
-func WalkHTMLFiles() error {
+func walkHTMLFiles() error {
 	err := filepath.WalkDir("public", func(path string, info os.DirEntry, err error) error {
 		if err != nil {
 			return err

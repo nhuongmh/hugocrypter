@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 )
 
+// convert raw password to checkSum hash
 func GetEncryptedPassword(password string) []byte {
 	hash := sha256.New()
 	hash.Write([]byte(password))
