@@ -100,7 +100,7 @@ Example using nodejs:
 http-server -p 1313 public
 ```
 
-### Configuration on Platforms like Netlify
+## Configuration on Platforms like Netlify
 
 You can specify build command as follow
 ```bash

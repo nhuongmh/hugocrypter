@@ -69,7 +69,7 @@ func postbuild_process() {
 
 func full_process(force bool) {
 	prebuild_process(force)
-	output, err := exec.Command("hugo").Output()
+	output, err := exec.Command("hugo", "--logLevel", "debug").Output()
 	fmt.Println(string(output))
 	if err != nil {
 		log.Fatalln("cmd.Output() gets error", err)
